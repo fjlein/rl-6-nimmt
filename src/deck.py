@@ -1,6 +1,7 @@
 import random
 
-from game.card import Card
+import config as conf
+from src.card import Card
 
 
 class Deck:
@@ -10,7 +11,7 @@ class Deck:
         self.shuffle()
 
     def build(self):
-        for value in range(1, 105):
+        for value in range(1, conf.TOTAL_CARD_COUNT + 1):
             bullheads = next(
                 b
                 for divisor, b in [(55, 7), (11, 5), (10, 3), (5, 2), (1, 1)]
@@ -21,5 +22,5 @@ class Deck:
     def shuffle(self):
         random.shuffle(self.cards)
 
-    def draw(self):
+    def draw_from_deck(self):
         return self.cards.pop()

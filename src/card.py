@@ -4,4 +4,4 @@ class Card:
         self.bullheads = bullheads
 
     def __str__(self):
-        return f"{self.value} with {self.bullheads} bullhead{'s' if self.bullheads != 1 else ''}"
+        return f"[{str(self.value).rjust(3)}, {self.bullheads}]"
