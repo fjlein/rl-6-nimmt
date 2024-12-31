@@ -19,23 +19,33 @@ class Player(ABC):
         pass
 
     @abstractmethod
-    def select_row_index(self, rows):
+    def select_row_to_take(self, rows):
         pass
 
+    @staticmethod
+    def get_row_to_append_to(rows, card):
+        min_delta = conf.TOTAL_CARD_COUNT
+        best_row = None
+
+        for row in rows:
+            last_card = row[-1]
+            if card.value > last_card.value:
+                delta = card.value - last_card.value
+                if delta < min_delta:
+                    min_delta = delta
+                    best_row = row
+
+        return best_row
+
     def play_card(self, rows):
-        row_index = rows.get_append_index(card=self.selected_card)
+        row = self.get_row_to_append_to(rows, card=self.selected_card)
 
-        if row_index is None:
-            index = self.select_row_index(rows)
-            self.penalty_cards.extend(rows.take_row(index))
-            rows.add_to_row(index=index, card=self.selected_card)
+        if row is None or len(row) == 5:
+            row = row or self.select_row_to_take(rows)
+            self.penalty_cards.extend(row)
+            row.clear()
 
-        elif rows.check_row_full(row_index):
-            self.penalty_cards.extend(rows.take_row(row_index))
-            rows.add_to_row(index=row_index, card=self.selected_card)
-
-        else:
-            rows.add_to_row(index=row_index, card=self.selected_card)
+        row.append(self.selected_card)
 
     def get_score(self):
         return sum([card.bullheads for card in self.penalty_cards])
@@ -63,41 +73,32 @@ class RandomPlayer(Player):
         self.selected_card = card
         self.hand_cards.remove(card)
 
-    def select_row_index(self, rows):
-        return random.choice(range(conf.ROW_COUNT))
+    def select_row_to_take(self, rows):
+        return random.choice(rows)
 
 
 class SmartPlayer1(RandomPlayer):
 
-    def select_row_index(self, rows):
+    def select_row_to_take(self, rows):
         return min(
-            range(conf.ROW_COUNT),
-            key=lambda i: sum(card.bullheads for card in rows.get_rows()[i]),
+            rows,
+            key=lambda row: sum(card.bullheads for card in row),
         )
 
 
 class SmartPlayer2(SmartPlayer1):
 
     @staticmethod
-    def card_score(c, rows):
-        index = rows.get_append_index(c)
-        if index is None:
+    def card_score(self, c, rows):
+        row = self.get_row_to_append_to(rows, c)
+        if row is None:
             return 6
-        return len(rows.get_rows()[rows.get_append_index(c)])
+        return len(self.get_row_to_append_to(rows, c))
 
     def select_card(self, rows):
 
-        self.hand_cards.sort(key=lambda c: self.card_score(c, rows))
+        self.hand_cards.sort(key=lambda c: self.card_score(self, c, rows))
 
         card = self.hand_cards[0]
         self.selected_card = card
         self.hand_cards.remove(card)
-
-
-class SmartPlayer3(SmartPlayer2):
-    @staticmethod
-    def card_score(c, rows):
-        index = rows.get_append_index(c)
-        if index is None:
-            return 6
-        return len(rows.get_rows()[rows.get_append_index(c)])

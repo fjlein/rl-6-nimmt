@@ -1,7 +1,11 @@
-import config
+import config as conf
 from src.player import RandomPlayer, SmartPlayer1, SmartPlayer2
 from src.tournament import Tournament
 from itertools import combinations
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG if conf.PRINT else logging.CRITICAL)
 
 
 def main():
@@ -19,7 +23,7 @@ def main():
         print(f"Tournament {i+1}")
         tournament = Tournament(
             players,
-            config.ITERATIONS,
+            conf.ITERATIONS,
         )
         tournament.play()
         tournament.evaluate()

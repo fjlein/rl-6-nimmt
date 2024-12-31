@@ -1,6 +1,5 @@
 import config as conf
 from src.deck import Deck
-from src.rows import Rows
 
 
 class Game:
@@ -9,7 +8,7 @@ class Game:
 
         self.deck = Deck()
 
-        self.rows = Rows(deck=self.deck)
+        self.rows = [[self.deck.draw_from_deck()] for _ in range(conf.ROW_COUNT)]
 
         for i in range(conf.CARDS_PER_PERSON):
             for player in self.players:
@@ -31,9 +30,7 @@ class Game:
         if self.players[0].get_score() == self.players[1].get_score():
             return None
 
-        self.players.sort(
-            key=lambda player: sum([c.bullheads for c in player.penalty_cards])
-        )
+        self.players.sort(key=lambda player: player.get_score())
 
         return self.players[0].name
 
