@@ -1,4 +1,5 @@
-import config as conf
+import logging
+
 from src.game import Game
 
 
@@ -10,8 +11,8 @@ class Tournament:
 
     def play(self):
         for i in range(self.iterations):
-            if conf.PRINT:
-                print(f"{"-"*20}\nStarting game {i+1}\n{"-"*20}")
+            logging.info(f"{"-"*10}Starting game {i+1}{"-"*10}")
+
             game = Game(self.players)
             winner = game.play()
             self.winners.append(winner)

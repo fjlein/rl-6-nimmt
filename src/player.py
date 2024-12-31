@@ -10,8 +10,8 @@ class Player(ABC):
         self.penalty_cards = []
         self.selected_card = None
 
-    def draw(self, deck):
-        self.hand_cards.append(deck.draw_from_deck())
+    def draw_card(self, deck):
+        self.hand_cards.append(deck.draw_card_from_deck())
         self.hand_cards.sort(key=lambda card: card.value)
 
     @abstractmethod
@@ -50,22 +50,6 @@ class Player(ABC):
     def get_score(self):
         return sum([card.bullheads for card in self.penalty_cards])
 
-    def show_hand_cards(self):
-        if conf.PRINT:
-            print(
-                f"{self.name} hand: {", ".join([str(card) for card in self.hand_cards])}"
-            )
-
-    def show_penalty_cards(self):
-        if conf.PRINT:
-            print(
-                f"{self.name} penalty cards: {", ".join([str(card) for card in self.penalty_cards])}"
-            )
-
-    def show_selected_card(self):
-        if conf.PRINT:
-            print(f"{self.name} selected card: {str(self.selected_card)}")
-
 
 class RandomPlayer(Player):
     def select_card(self, rows):
@@ -88,16 +72,14 @@ class SmartPlayer1(RandomPlayer):
 
 class SmartPlayer2(SmartPlayer1):
 
-    @staticmethod
     def card_score(self, c, rows):
         row = self.get_row_to_append_to(rows, c)
         if row is None:
             return 6
-        return len(self.get_row_to_append_to(rows, c))
+        return len(row)
 
     def select_card(self, rows):
-
-        self.hand_cards.sort(key=lambda c: self.card_score(self, c, rows))
+        self.hand_cards.sort(key=lambda c: self.card_score(c, rows))
 
         card = self.hand_cards[0]
         self.selected_card = card
